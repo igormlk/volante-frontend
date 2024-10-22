@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 import { Button } from "../ui/button";
 import { LogOut } from "lucide-react";
 // import Logo from "@/assets/svg/logo";
-import logo from "../../../src-tauri/icons/app-icon-transparent.png"
+import logo from "../../icons/app-icon-transparent.png"
 
 const MenuNavLinkVariant = cva('flex items-center gap-2 w-[160px] p-3 rounded-xl text-zinc-400 text-sm transition', {
     variants: {
