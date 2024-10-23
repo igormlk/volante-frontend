@@ -1,1 +1,1 @@
-export const BASE_URL = 'http://volante-backend.flycast/'
+export const BASE_URL = 'https://volante-backend.fly.dev/'
