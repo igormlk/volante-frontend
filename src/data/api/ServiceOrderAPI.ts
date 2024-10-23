@@ -32,7 +32,6 @@ export const getServiceOrderAPI = (searchValue = '', page = 1, filter: 'vehicle'
 // }
 
 export async function putServiceOrderAPI(data: Partial<ServiceOrder>){
-    console.log("Hello")
     return fetch(`${BASE_URL}service_orders`, {
         method: 'POST',
         headers: {
