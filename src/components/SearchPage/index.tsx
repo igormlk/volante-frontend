@@ -37,11 +37,12 @@ SearchPage.LoadMore = ({loading, visible, onClick, children}: LoadMoreProps) => 
         return null
     }
     return(
-        <div className="flex justify-center">
+        <div className="flex justify-center p-4">
             <Button  
                 loading={loading}
                 onClick={onClick} 
-                variant={'default'}>
+                variant={'link'}
+                className="text-md">
                 {children}
             </Button>
         </div>

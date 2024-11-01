@@ -4,7 +4,7 @@ import { Toaster } from "./components/ui/sonner";
 import { createBrowserRouter, Link, Outlet, RouterProvider } from "react-router-dom";
 import Menu from "./components/Menu/Menu";
 import { ROUTER_PATHS } from "./routes/routes";
-import { Car, FilePlus, FolderSearch, User } from "lucide-react";
+import { Car, FilePlus, FolderSearch, Home, User } from "lucide-react";
 import VehiclesPage from "./pages/Vehicles/VehiclesPage";
 import CustomersPage from "./pages/Customers/CustomersPage";
 // import CatalogPage from "./pages/Catalog/CatalogPage";
@@ -13,14 +13,14 @@ import CustomersPage from "./pages/Customers/CustomersPage";
 import SearchServiceOrdersPage from "./pages/ServiceOrders/ServiceOrdersPage";
 
 const MENU_LINKS = [
-  // {
-  //   path: ROUTER_PATHS.HOME,
-  //   element: <h1 className="h-full w-full align-text-middle text-zinc-400 text-center py-[33%]">Home</h1>,
-  //   label: 'Início',
-  //   icon: <Home size={23}/>
-  // },
   {
-    path: ROUTER_PATHS.SERVICE_ORDER,
+    path: ROUTER_PATHS.HOME,
+    element: <h1 className="h-full w-full align-text-middle text-zinc-400 text-xl text-center py-[30%]">Volante, você na direção da sua oficina</h1>,
+    label: 'Início',
+    icon: <Home size={23}/>
+  },
+  {
+    path: ROUTER_PATHS.SERVICE_ORDER + '/new',
     element: <ServiceOrderPage/>,
     label: 'Novo',
     icon: <FilePlus size={23}/>
@@ -73,22 +73,28 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: 
-      <div className="flex-1 flex bg-zinc-50">
+      <div className="flex-1 flex bg-zinc-50 divide-x">
         <Menu links={MENU_LINKS}/>
-        <div className="rounded-2xl ml-0 p-4 m-2 flex-1">
+        <div className="rounded p-8 pb-0 flex-1 overflow-scroll">
           <Outlet/>
         </div>
       </div>,
     errorElement: <h1>404 not found page <Link to={"/"}>Voltar</Link></h1>,
-    children: MENU_LINKS
-  },
+    children: [...MENU_LINKS.map(link => ({
+      path: link.path,
+      element: link.element,
+    })), {
+      path: `${ROUTER_PATHS.SERVICE_ORDER}/:id`,
+      element: <ServiceOrderPage/>
+    }]
+  }
 ])
 
 function App() {
   return (
-    <div className="bg-slate-50 flex-1 flex">
+    <div className="bg-zinc-50 flex-1 flex">
       <RouterProvider router={router}/>
-      <Toaster position="bottom-right"  closeButton/>
+      <Toaster position="top-right"  closeButton/>
     </div>
   );
 }

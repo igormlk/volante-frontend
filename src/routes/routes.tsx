@@ -2,10 +2,10 @@ export enum ROUTER_PATHS {
     HOME = '/',
     SERVICE_ORDER = '/service-order',
     SERVICE_ORDERS= '/service-orders',
-    VEHICLE = '/vehicle',
-    CUSTOMER = '/customer',
-    EMPLOYEE = '/employee',
-    SUPPLIER = '/supplier',
+    VEHICLE = '/vehicles',
+    CUSTOMER = '/customers',
+    EMPLOYEE = '/employees',
+    SUPPLIER = '/suppliers',
     CATALOG = '/catalog',
     CONFIG = '/config'
 }

@@ -4,6 +4,7 @@ import useSOPrices from '@/hooks/useSOPrices';
 import { currencyFormat } from '@/lib/utils';
 import { ServiceOrder, ServiceOrderItem } from '@/pages/ServiceOrder/types';
 import { Page, Text, View, Document, StyleSheet, Image, Svg, Line } from '@react-pdf/renderer';
+import { useMemo } from 'react';
 
 const styles = StyleSheet.create({
   page: {
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: 12,
     backgroundColor: '#EFEFEF',
-    fontSize: 7,
+    fontSize: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'
@@ -92,29 +93,37 @@ const styles = StyleSheet.create({
 
 interface ServiceOrderPDFProps {
     data?: Partial<ServiceOrder>,
+    filename?: string
 }
-export const ServiceOrderPDF = ({data}: ServiceOrderPDFProps) => {
-  const todayDate = new Date();
-  const expirationDate = new Date();
-  expirationDate.setDate(expirationDate.getDate() + 15);
+export const ServiceOrderPDF = ({data, filename}: ServiceOrderPDFProps) => {
+  const PAGE_SIZE = 20;
 
+  const expirationDate = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 15);
+    return date;
+  }, []);
+
+  const paginatedItems = useMemo(() => {
+    let paginated = []
+    for (let i = 0; i < (data?.service_order_items?.length || 0); i += PAGE_SIZE) {
+      paginated.push(data?.service_order_items?.slice(i, i + PAGE_SIZE));
+    }
+    return paginated
+  }, [data?.service_order_items])
+
+  const LAST_PAGE_INDEX =  paginatedItems.length - 1
   const prices = useSOPrices(data?.service_order_items || [])
-  const itemsPerPage = 20;
-  const paginatedItems = [];
-  for (let i = 0; i < (data?.service_order_items?.length || 0); i += itemsPerPage) {
-    paginatedItems.push(data?.service_order_items?.slice(i, i + itemsPerPage));
-  }
-  const lastPageIndex =  paginatedItems.length - 1
-
+  
   return (
-  <Document author='Geração 2000 - Centro Técnico de Reparos Automotivos'> 
-    {paginatedItems.map((serviceOrderItems, pageIndex) => (
+  <Document author='Volante - Sistema de Gestão de Orçamentos' title={filename} subject={'Orçamento Veicular'} creationDate={new Date()}> 
+    {paginatedItems?.map((serviceOrderItems, pageIndex) => (
       <Page key={pageIndex} size="A4" style={styles.page} bookmark={"Geração 2000"}>
       {/* Header da Página */}
       <View style={styles.header} fixed>
           <Image src={'../assets/company_logo.png'} style={styles.logo}/>
           <View style={{flex: 1}}>
-              <Text>{Intl.DateTimeFormat('pt-BR', {dateStyle: 'long'}).format(todayDate)}</Text>
+              <Text>{Intl.DateTimeFormat('pt-BR', {dateStyle: 'full'}).format(new Date())}</Text>
               <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => (`${pageNumber} / ${totalPages}`)}/>
           </View>
       </View>
@@ -122,13 +131,13 @@ export const ServiceOrderPDF = ({data}: ServiceOrderPDFProps) => {
 
       {/* Dados do Orçamento */}
       <View style={{...styles.container, justifyContent: 'space-between'}}>
-          <View>
+          <View style={{flex: 1}}>
               <Text style={styles.title}>{data?.customer?.name || 'Cliente anônimo'}</Text>
               {data?.customer?.cpf && <Text><Text style={styles.title2}>CPF: </Text>{data?.customer?.cpf}</Text>}
               {data?.customer?.email && <Text><Text style={styles.title2}>E-mail: </Text>{data?.customer?.email}</Text>}
               {data?.customer?.phone && <Text><Text style={styles.title2}>Telefone: </Text>{data?.customer?.phone}</Text>}
           </View>
-          <View>
+          <View style={{flex: 1}}>
               <Text style={styles.title}>{(data?.vehicle?.model || data?.vehicle?.brand) ? `${data?.vehicle?.brand} ${data?.vehicle?.model}` : 'Veículo não informado'}</Text>
               <View style={{display: 'flex', flexDirection: 'row', gap: '8px'}}>
                 {data?.vehicle?.year && <Text><Text style={styles.title2}>Ano: </Text>{data?.vehicle?.year || 'não informado'}</Text>}
@@ -143,7 +152,7 @@ export const ServiceOrderPDF = ({data}: ServiceOrderPDFProps) => {
                 {data?.vehicle?.chassi && <Text><Text style={styles.title2}>Chassi: </Text>{data?.vehicle?.chassi || 'não informado'}</Text>}
               </View>
           </View>
-          <View style={{width: 130}}>
+          <View style={{width: 120}}>
               {data?.customer?.address && <Text style={{...styles.title, textAlign: 'right'}}>{data?.customer?.address ? 'Endereço' : 'Endereço não informado'}</Text>}
               {data?.customer?.address && <Text style={{textAlign: 'right'}}>{data?.customer?.address || "não informado"}</Text>}
           </View>
@@ -171,7 +180,7 @@ export const ServiceOrderPDF = ({data}: ServiceOrderPDFProps) => {
           ))}
       </View>
       {/* Preços */}
-      {(pageIndex === lastPageIndex) && <View style={styles.container}>
+      {(pageIndex === LAST_PAGE_INDEX) && <View style={styles.container}>
         <View>
             <Text style={styles.title}>Subtotal</Text>
             <Text>{currencyFormat(prices.subtotal, 'currency')}</Text>
@@ -235,7 +244,7 @@ export const ServiceOrderPDF = ({data}: ServiceOrderPDFProps) => {
               <Text><Text style={styles.title2}>Instagram: </Text>@oficinageracao2k</Text>
               <Text><Text style={styles.title2}>Facebook: </Text>Oficina Geração 2000</Text>
           </View>
-          <Text style={{width: 80,textAlign: 'center'}}>Rua Gisele, 204 Parque dos Camargos, Barueri - SP / 06436-120 </Text>
+          <Text style={{width: 100,textAlign: 'center'}}>Rua Gisele, 204 Parque dos Camargos, Barueri - SP / 06436-120 </Text>
           <Text style={{width: 110,textAlign: 'right'}}>CNPJ: 04.367.737/0001-06</Text>
       </View>
     </Page>

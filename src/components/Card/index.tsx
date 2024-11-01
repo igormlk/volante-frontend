@@ -33,6 +33,7 @@ Card.Badge = ({children}: {children?: ReactNode}) => {
 Card.Header = ({title, description, avatar, children, fallback}: {title?: string, description?: string, children?: ReactNode, avatar?: string, fallback?: string}) => {
     return (
         <CardHeader className={'flex flex-row justify-center items-center gap-4 h-21 flex-1 min-w-[160px]'}>
+            {children}
             {(avatar || fallback) && 
                 <Avatar>
                     {avatar && <AvatarImage src={avatar}/>}
@@ -43,7 +44,6 @@ Card.Header = ({title, description, avatar, children, fallback}: {title?: string
                 {title && <CardTitle>{title}</CardTitle>}
                 {description && <CardDescription className="text-md text-gray-500">{description}</CardDescription>}
             </div>
-            {children}
         </CardHeader>
     )
 }

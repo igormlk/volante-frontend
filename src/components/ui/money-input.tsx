@@ -1,11 +1,4 @@
-import { useEffect, useReducer } from "react";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form"; // Shadcn UI import
+import {FormControl,FormField,FormItem,FormLabel,FormMessage} from "../ui/form"; // Shadcn UI import
 import { Input } from "../ui/input"; // Shandcn UI Input
 import { UseFormReturn } from "react-hook-form";
 
@@ -14,7 +7,7 @@ type TextInputProps = {
   name: string;
   label: string;
   placeholder: string;
-  className?: string
+  className?: string;
 };
 
 // Brazilian currency config
@@ -28,32 +21,23 @@ const moneyFormatter = Intl.NumberFormat("pt-BR", {
 });
 
 export default function MoneyInput(props: TextInputProps) {
-  const initialValue = props.form.getValues()[props.name]
-    ? moneyFormatter.format(props.form.getValues()[props.name])
-    : "";
-
-  const [value, setValue] = useReducer((_: any, next: string) => {
-    const digits = next.replace(/\D/g, "");
-    return moneyFormatter.format(Number(digits) / 100);
-  }, initialValue);
-
-  function handleChange(realChangeFn: Function, formattedValue: string) {
-    const digits = formattedValue.replace(/\D/g, "");
+  // Atualiza o valor diretamente com o hook form
+  const handleChange = (value: string, onChange: Function) => {
+    const digits = value.replace(/\D/g, "");
     const realValue = Number(digits) / 100;
-    realChangeFn(realValue);
-  }
 
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
+    // Atualiza o valor no formulário
+    onChange(realValue);
+  };
 
   return (
     <FormField
       control={props.form.control}
       name={props.name}
       render={({ field }) => {
-        field.value = value;
-        const _change = field.onChange;
+        const formattedValue = field.value
+          ? moneyFormatter.format(field.value)
+          : "";
 
         return (
           <FormItem>
@@ -62,13 +46,9 @@ export default function MoneyInput(props: TextInputProps) {
               <Input
                 placeholder={props.placeholder}
                 type="text"
-                {...field}
-                onChange={(ev) => {
-                  setValue(ev.target.value);
-                  handleChange(_change, ev.target.value);
-                }}
+                value={formattedValue} // Valor formatado exibido no input
+                onChange={(ev) => handleChange(ev.target.value, field.onChange)} // Manipula a formatação
                 className={props.className}
-                value={value}
               />
             </FormControl>
             <FormMessage />

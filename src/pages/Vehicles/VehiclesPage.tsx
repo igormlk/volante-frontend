@@ -2,16 +2,13 @@ import Card from "@/components/Card"
 import SearchPage from "@/components/SearchPage"
 import CarPlate from "@/components/ui/plate"
 import { getVehiclesAPI } from "@/data/api/VehiclesAPI"
-import { CAR_FUELS } from "@/data/constants/carBrands"
-import { COLORS } from "@/data/constants/colors"
 import { USE_QUERY_CONFIGS } from "@/data/constants/utils"
 import useDebounce from "@/hooks/useDebounce"
 import { isToday } from "@/lib/utils"
 import { useInfiniteQuery } from "@tanstack/react-query"
-import { Fuel, Palette } from "lucide-react"
 
 export default function VehiclesPage() {
-  const [searchValue, setSearchValue] = useDebounce({timeout: 200})
+  const [searchValue, setSearchValue] = useDebounce({timeout: 800})
 
   const {data: vehicles, isFetchingNextPage, hasNextPage, fetchNextPage} = useInfiniteQuery({
     queryKey: ['get_all_vehicles', {searchValue}],
@@ -35,16 +32,16 @@ export default function VehiclesPage() {
           <Card key={vehicle.id}>
             <Card.Header
               title={(vehicle.brand || vehicle.model) ? `${vehicle.brand} ${vehicle.model}` : 'Sem Veículo'}
-              description={String(vehicle.year || '').toUpperCase()}
+              description={String(vehicle.year).toUpperCase()}
             >
             <CarPlate plate={vehicle.plate || ''}/>
             </Card.Header>
             {isToday(new Date(vehicle.updatedAt)) && <Card.Badge> </Card.Badge>}
-            <Card.Content>
+            {/* <Card.Content>
               <p className="flex gap-2 text-sm mb-1"><Palette size={18} className="ml-[1px]"/>{COLORS.find(i => i.value === vehicle.color)?.label || 'Não informada'}</p>
               <p className="flex gap-2 text-sm"><Fuel size={18} className="ml-[1px]"/>{CAR_FUELS.find(i => i.value === vehicle.fuel)?.label || 'Não informado'}</p>
-              {/* <p className="flex gap-2 text-sm mt-1"><Car size={18}/>{vehicle.chassi || 'Chassi não informado'}</p> */}
-            </Card.Content>
+              <p className="flex gap-2 text-sm mt-1"><Car size={18}/>{vehicle.chassi || 'Chassi não informado'}</p>
+            </Card.Content> */}
           </Card>
         ))}
       </Card.Container>

@@ -22,10 +22,6 @@ interface ServiceOrderItemProps {
     onRemoveItem: (item: ServiceOrderItem) => void
 }
 
-const defaultServiceOrder: ServiceOrderItem = {
-   id: nanoid(), description: "", value: 0, discount: 0, quantity: 1, type: "BODYWORK", insurance_coverage: 0, total: 0
-};
-
 const ServiceOrderItems = ({ data, onAddItem, onChangeItem, onRemoveItem }: ServiceOrderItemProps) => {
     const { subtotal, totalPrice, totalDiscountPrice, totalPartsPrice, totalServicesPrice } = useSOPrices(data);
 
@@ -59,13 +55,20 @@ const ServiceOrderItems = ({ data, onAddItem, onChangeItem, onRemoveItem }: Serv
     );
 };
 
+const ITEM_ID_LENGTH = 10
+const defaultServiceOrder: ServiceOrderItem = {
+    id: nanoid(ITEM_ID_LENGTH), description: "", value: 0, discount: 0, quantity: 1, type: "BODYWORK", insurance_coverage: 0, total: 0
+ };
+
 ServiceOrderItems.Form = ({ onSubmit }: { onSubmit: (data: ServiceOrderItem) => void }) => {
     const form = useForm<ServiceOrderItem>({ defaultValues: defaultServiceOrder });
-    const resetForm = () => form.reset(defaultServiceOrder);
-
     const handleOnSubmit = (data: ServiceOrderItem) => {
         onSubmit(data);
-        resetForm();
+        form.setValue('id', nanoid(ITEM_ID_LENGTH))
+        form.setValue('description', '')
+        form.setValue('quantity', 0)
+        form.setValue('discount', 0)
+        form.setValue('value', 0)
         form.setFocus("description");
     };
 
@@ -101,7 +104,7 @@ interface ServiceOrderListProps {
 
 ServiceOrderItems.List = ({ data, renderItem }: ServiceOrderListProps) => (
     <ol className="relative flex border m-[-17px] flex-col p-2 mt-4 flex-1 select-none">
-        <div className="overflow-y-scroll max-h-[calc(100vh-440px)] flex-1">
+        <div className="overflow-y-scroll max-h-[calc(100vh-330px)] flex-1">
             {data.map(renderItem)}
         </div>
         {/* <span className="w-full h-[80px] pointer-events-none absolute bottom-0 left-0 bg-gradient-to-t from-white" /> */}
@@ -121,7 +124,7 @@ ServiceOrderItems.ListItem = ({ item, onChange, onDelete }: { item: ServiceOrder
         <span className={`w-[10px] h-[10px] pl-4 ml-4 ${BADGE_COLORS[item.type]} rounded-full`} />
         <div className="flex flex-col flex-1">
             <input
-                className="font-medium h-full w-full px-2 bg-transparent rounded"
+                className="font-medium h-full w-full p-2 bg-transparent rounded"
                 type="text"
                 value={item.description}
                 onChange={(e) => handleOnChange('description', e.target.value)}
@@ -130,7 +133,7 @@ ServiceOrderItems.ListItem = ({ item, onChange, onDelete }: { item: ServiceOrder
         </div>
         <div className="flex-1 flex items-center justify-end gap-2 mr-4">
             <input
-                className="font-medium text-right h-full w-[62px] px-2 bg-transparent rounded"
+                className="font-medium text-right h-full w-[62px] p-2 bg-transparent rounded"
                 type="currency"
                 value={item.quantity}
                 min={1}
@@ -140,7 +143,7 @@ ServiceOrderItems.ListItem = ({ item, onChange, onDelete }: { item: ServiceOrder
                 x
             </p>
             <input
-                className="font-medium text-right h-full w-[80px] px-2 bg-transparent rounded"
+                className="font-medium text-right h-full w-[80px] p-2 bg-transparent rounded"
                 type="currency"
                 min={0}
                 value={item.value}
@@ -148,7 +151,7 @@ ServiceOrderItems.ListItem = ({ item, onChange, onDelete }: { item: ServiceOrder
                 onChange={(e) => handleOnChange('value', e.target.value)}
             />
             <input
-                className="font-medium text-right h-full w-[62px] px-2 bg-transparent rounded"
+                className="font-medium text-right h-full w-[62px] p-2 bg-transparent rounded"
                 type="currency"
                 value={item.discount}
                 min={0}

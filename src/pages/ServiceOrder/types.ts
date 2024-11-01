@@ -19,7 +19,7 @@ export type ServiceOrder = {
     customer: CustomerSchema,
     vehicle: VehicleSchema,
     items: ServiceOrderItem[] | [],
-    service_order_items?: ServiceOrderItem[] | []
+    service_order_items: ServiceOrderItem[] | []
 }
 
 export type ServiceOrderItem = {

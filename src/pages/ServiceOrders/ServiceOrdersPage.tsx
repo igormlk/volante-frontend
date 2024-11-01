@@ -32,7 +32,7 @@ export default function SearchServiceOrdersPage() {
 
   const handleCardClick = async (serviceOrder: ServiceOrder) => {
     await setServiceOrder({...serviceOrder})
-    navigation(ROUTER_PATHS.SERVICE_ORDER + '?edit=true')
+    navigation(`${ROUTER_PATHS.SERVICE_ORDER}/${serviceOrder.id}`, { state: {service_order: serviceOrder} })
   }
 
   const serviceOrdersData = serviceOrders?.pages.flatMap((page) => page.data) || [];
@@ -57,7 +57,7 @@ export default function SearchServiceOrdersPage() {
           </Card>
         ))}
       </Card.Container>
-        <SearchPage.LoadMore visible={hasNextPage} loading={isFetchingNextPage} onClick={() => fetchNextPage()} >Ver mais</SearchPage.LoadMore>
+      <SearchPage.LoadMore visible={hasNextPage} loading={isFetchingNextPage} onClick={() => fetchNextPage()} >Ver mais</SearchPage.LoadMore>
     </SearchPage>
   )
 }

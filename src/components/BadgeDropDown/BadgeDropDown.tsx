@@ -6,7 +6,7 @@ interface StatusDropDownProps {
     value: string | undefined,
     disabled?: boolean,
     options: {value: STATUS_SERVICE_ORDER, label: string, color?: string, linked?:STATUS_SERVICE_ORDER[]}[]
-    onChange: (value: STATUS_SERVICE_ORDER | string) => void
+    onChange: (value: STATUS_SERVICE_ORDER | string | any) => void
 }
 export default function StatusDropDown({title, value, options, disabled, onChange}: StatusDropDownProps) {
     const selected = options.find(item => item.value === value)

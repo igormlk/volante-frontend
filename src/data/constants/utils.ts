@@ -10,7 +10,7 @@ export const SO_STATUS_LIST: {value: STATUS_SERVICE_ORDER, label: string, color:
         value: STATUS_SERVICE_ORDER.WAITING_APPROVAL,
         label: 'Enviado ao cliente',
         color: 'bg-violet-500',
-        linked: [STATUS_SERVICE_ORDER.APPROVED, STATUS_SERVICE_ORDER.REJECTED]
+        linked: [STATUS_SERVICE_ORDER.APPROVED, STATUS_SERVICE_ORDER.REJECTED, STATUS_SERVICE_ORDER.PENDING]
     },{
         value: STATUS_SERVICE_ORDER.APPROVED,
         label: 'Aprovado',
@@ -40,6 +40,7 @@ export const SO_STATUS_LIST: {value: STATUS_SERVICE_ORDER, label: string, color:
         value: STATUS_SERVICE_ORDER.DONE,
         label: 'Entregue',
         color: 'bg-zinc-900',
+        linked: [STATUS_SERVICE_ORDER.PENDING]
     },{
         value: STATUS_SERVICE_ORDER.BLOCKED,
         label: 'Bloqueado',
@@ -60,10 +61,10 @@ export const SO_STATUS_LIST: {value: STATUS_SERVICE_ORDER, label: string, color:
 export const PAGE_LIMIT = 15
 
 export const USE_QUERY_CONFIGS = {
-    retry: 1,
-    refetchOnWindowFocus: true,
+    retry: 0,
+    refetchOnWindowFocus: false,
     refetchOnMount: true,
-    initialPageParam: 1,
+    initialPageParam: 1
 }
 
 export const CAR_SERVICES = [

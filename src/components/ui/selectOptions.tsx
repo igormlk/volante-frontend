@@ -22,7 +22,7 @@ const SelectOption = forwardRef(({value, placeholder,options, className, disable
             <SelectTrigger className={className} ref={ref}>
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[200px]">
                 <SelectGroup>
                     {/* <SelectLabel>Title</SelectLabel> */}
                     {options.map(renderOption)}
