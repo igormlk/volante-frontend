@@ -1,3 +1,3 @@
-import { BASE_URL } from "@/routes/const";
+import { api } from "./config";
 
-export const getVehiclesAPI = (searchValue = '', page = 1) => fetch(BASE_URL + 'vehicles/search?page=' + page + '&searchValue=' + searchValue).then(res => res.json())
+export const getVehiclesAPI = async (searchValue = '', page = 1) => (await api.get('vehicles/search', {params: { searchValue, page }})).data

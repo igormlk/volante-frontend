@@ -17,6 +17,6 @@ body{
   display: flex;
 }
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   display: none;
-}
+} */

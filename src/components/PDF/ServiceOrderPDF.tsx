@@ -169,7 +169,7 @@ export const ServiceOrderPDF = ({data, filename}: ServiceOrderPDFProps) => {
               <Text style={styles.itemTitle}>Total</Text>
           </View>
           {((serviceOrderItems?.length || 0) > 0) && serviceOrderItems?.map((item: ServiceOrderItem) => (
-              <View key={item?.id} style={{flexDirection: 'row', minHeight: 12, paddingHorizontal: 12}}>
+              <View key={item?.uuid} style={{flexDirection: 'row', minHeight: 12, paddingHorizontal: 12}}>
                   <Text style={{...styles.itemText, flex: 1, textAlign: 'left'}}>{item.description}</Text>
                   <Text style={styles.itemText}>{item.quantity}</Text>
                   <Text  style={styles.itemText}>{currencyFormat(item.value)}</Text>

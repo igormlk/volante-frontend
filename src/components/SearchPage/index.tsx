@@ -4,7 +4,7 @@ import { Input, InputProps } from "@/components/ui/input"
 
 export default function SearchPage({children}: any) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-1 flex-col h-full">
       {children}
     </div>
   )
@@ -16,11 +16,12 @@ SearchPage.Title = ({children}: {children: string}) => {
     )
 }
 
-SearchPage.SearchBar = ({className, children,...props}: InputProps) => {
+SearchPage.SearchBar = ({className, children, posChildren,...props}: InputProps) => {
     return (
-        <div className='my-4 flex'>
+        <div className='my-4 flex gap-2'>
             {children}
             <Input type="text" className={"flex-1 p-6 " + className} {...props} />
+            {posChildren}
         </div>
     )
 }

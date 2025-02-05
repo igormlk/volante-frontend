@@ -1,4 +1,4 @@
-import { Check, File, Save, User, X } from "lucide-react";
+import { Car, Check, File, Save, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CustomerForm } from "@/components/FormSheet/Customer";
@@ -13,68 +13,117 @@ import { ServiceOrderPDF } from "@/components/PDF/ServiceOrderPDF";
 import { Modal } from "@/components/Modal/Modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import {deleteServiceOrderItem,putServiceOrderAPI} from "@/data/api/ServiceOrderAPI";
 import { Input } from "@/components/ui/input";
 import { FormProvider, useForm } from "react-hook-form";
 import { DEFAULT_CUSTOMER_VALUE } from "@/components/FormSheet/Customer/schema";
 import { DEFAULT_VEHICLE_VALUES } from "@/components/FormSheet/Vehicle/schema";
 import Textarea from "@/components/ui/textarea";
-import { nanoid } from "nanoid/non-secure";
 import { useLocation, useParams } from "react-router-dom";
+import FileSelect from "@/components/ui/fileSelect";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ServiceOrderAPI from "@/data/api/ServiceOrderAPI";
 
+const DEFAULT_FORM_VALUES = {
+  uuid: undefined,
+  service_order_items: [],
+  customer: DEFAULT_CUSTOMER_VALUE,
+  vehicle: DEFAULT_VEHICLE_VALUES,
+  status: STATUS_SERVICE_ORDER.PENDING,
+  startAt: "",
+  endAt: "",
+  note: "",
+};
 
 function ServiceOrderPage() {
-  const [activeTab, setActiveTab] = useState<"customer" | "damage" | string>("customer");
+  const { uuid } = useParams();
+  const location = useLocation();
   const [pdfData, setPdfData] = useState<ServiceOrder>();
-  const pdfFileName = `${pdfData?.vehicle?.brand}_${pdfData?.vehicle?.model}_${pdfData?.customer?.name}`
-  const { id } = useParams()
-  const location = useLocation()
+  const [activeTab, setActiveTab] = useState<"customer" | "damage" | string>(
+    "customer"
+  );
+  const pdfFileName = `${pdfData?.vehicle?.brand}_${pdfData?.vehicle?.model}_${pdfData?.customer?.name}`;
 
-  const methods = useForm<ServiceOrder>({
-    defaultValues: {
-      id: nanoid(8),
-      service_order_items: [],
-      customer: DEFAULT_CUSTOMER_VALUE,
-      vehicle: DEFAULT_VEHICLE_VALUES,
-      status: STATUS_SERVICE_ORDER.PENDING,
-      startAt: "",
-      endAt: "",
-      note: "",
-    },
-  });
+  const methods = useForm<ServiceOrder>({ defaultValues: DEFAULT_FORM_VALUES });
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    if(id){
-      const editingServiceOrder: ServiceOrder = location?.state?.service_order
+    if (uuid) {
+      const editingServiceOrder: ServiceOrder = location?.state?.service_order;
       Object.entries(editingServiceOrder).forEach(([key, value]) => {
-        if(['startAt', 'endAt'].includes(key)){
-          return methods.setValue(key as keyof ServiceOrder, String(value).substring(0,10));
+        if (["startAt", "endAt"].includes(key)) {
+          return methods.setValue(
+            key as keyof ServiceOrder,
+            String(value).substring(0, 10)
+          );
         }
         methods.setValue(key as keyof ServiceOrder, value);
       });
-    }else if(location.pathname === '/service-order/new'){
-      methods.reset()
+    } else if (location.pathname === "/service-order/new") {
+      methods.reset();
     }
-  }, [id])
+  }, [uuid]);
 
-  const serviceOrderItems  = methods.watch('service_order_items')
+  const serviceOrderItems = methods.watch("service_order_items");
 
   const handleOnAddItem = async (newItem: ServiceOrderItem) => {
-    methods.setValue('service_order_items', [newItem, ...serviceOrderItems])
+    methods.setValue("service_order_items", [newItem, ...serviceOrderItems]);
   };
 
   const handleChangeItem = (changedItem: ServiceOrderItem) => {
-    const index = serviceOrderItems.findIndex((item) => (item.id === changedItem.id))
-    let updatedServiceOrderItems = serviceOrderItems
-    updatedServiceOrderItems[index] = changedItem
-    methods.setValue('service_order_items', updatedServiceOrderItems)
+    const index = serviceOrderItems.findIndex(
+      (item) => item.uuid === changedItem.uuid
+    );
+    let updatedServiceOrderItems = serviceOrderItems;
+    updatedServiceOrderItems[index] = changedItem;
+    methods.setValue("service_order_items", updatedServiceOrderItems);
   };
 
   const handleOnRemoveItem = (deletedItem: ServiceOrderItem) => {
-    deleteServiceOrderItem(deletedItem.id).then(() => {
-      methods.setValue('service_order_items', serviceOrderItems.filter((item) => (item.id !== deletedItem.id)) || [])
-    })
+    //Checar se já foi salvo ou nao para evitar requisiçoes desnecessárias.
+    ServiceOrderAPI.delete(deletedItem.uuid).then(() => {
+      methods.setValue(
+        "service_order_items",
+        serviceOrderItems.filter((item) => item.uuid !== deletedItem.uuid) || []
+      );
+    });
   };
+
+  const handleOnError = (e: any) => {
+    console.error(e);
+    toast.message("Erro ao salvar", { icon: <X /> });
+  };
+
+  const handleOnSave = (serviceOrder: ServiceOrder) =>
+    putServiceOrder(serviceOrder);
+
+  const invalidateSearchQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["get_service_orders"] });
+    queryClient.invalidateQueries({ queryKey: ["get_customers"] });
+    queryClient.invalidateQueries({ queryKey: ["get_all_vehicles"] });
+  };
+
+  const { mutate: putServiceOrder, isPending } = useMutation({
+    mutationKey: ["put-service-order"],
+    mutationFn: async (data: ServiceOrder) => (await ServiceOrderAPI.put(data)).data,
+    onError: (e) => handleOnError(e),
+    onSuccess: (response) => {
+      methods.setValue("customer", response.customer);
+      methods.setValue("vehicle", response.vehicle);
+      toast.message("Salvo com sucesso!", { icon: <Check /> });
+      invalidateSearchQueries();
+    },
+  });
+
+  // const onDuplicateClick = () => {
+  // const newOSId = nanoid();
+  // setId(newOSId);
+  // setStatus(STATUS_SERVICE_ORDER.PENDING);
+  // const duplicatedItems = methods
+  //   .watch("service_order_items")
+  //   .map((item) => ({ ...item, id: nanoid(), serviceOrderId: newOSId }));
+  // setItems(duplicatedItems);
+  // toast.message("Duplicado com sucesso!");
+  // };
 
   // const handleCarMapChange = async (selected: IChangeValue, data: ICarSelectionValue) => {
   //   if(selected.action.value === CAR_ACTIONS.DAMAGE) return
@@ -88,114 +137,15 @@ function ServiceOrderPage() {
   //   return COLORS.find(color => color.value === vehicle?.color)?.code || "#000"
   // }
 
-  const handleOnSave = (serviceOrder: any) => {
-    putServiceOrderAPI(serviceOrder).then((data) => {
-      if (data) {
-        methods.setValue('customer', data?.customer)
-        methods.setValue('vehicle', data?.vehicle)
-        toast.message("Salvo com sucesso!", { icon: <Check /> });
-      } else {
-        toast.message("Erro ao salvar", { icon: <X /> });
-      }
-    });
-  };
-
-  // const onDuplicateClick = () => {
-    // const newOSId = nanoid();
-    // setId(newOSId);
-    // setStatus(STATUS_SERVICE_ORDER.PENDING);
-    // const duplicatedItems = methods
-    //   .watch("service_order_items")
-    //   .map((item) => ({ ...item, id: nanoid(), serviceOrderId: newOSId }));
-    // setItems(duplicatedItems);
-    // toast.message("Duplicado com sucesso!");
-  // };
-
   return (
-    <div className="h-full flex gap-8 pb-8 flex-wrap flex-row-reverse">
-      <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(handleOnSave)}>
-          {/* Left side */}
-          <div className="flex w-[350px] flex-col">
-            {/* <CarServiceSelector/> */}
-            <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-[7px]">
-                <TabsTrigger value="customer">
-                  <User className="w-[18px] mr-2" />
-                  Dados Pessoais
-                </TabsTrigger>
-                {/* <TabsTrigger value="damage"><Car className="w-[18px] mr-2"/>Mapa Veicular</TabsTrigger> */}
-              </TabsList>
-              {/* <TabsContent value="damage" hidden={activeTab !== 'damage'} forceMount>
-              <CarServiceSelector color={getVehicleColor(vehicle)} value={car_map} onChange={handleCarMapChange}/>
-              <Card className="p-4 rounded-lg mt-3">
-                <FileSelect label="Imagens"/>
-              </Card>
-              </TabsContent> */}
-              <TabsContent value="customer" className="h-[calc(100vh-160px)] flex-1 overflow-scroll">
-                <div className="flex flex-col gap-2">
-                  <Card className="px-4 rounded-lg">
-                    <CustomerForm isPending={false} />
-                  </Card>
-                  <Card className="px-4 rounded-lg">
-                    <VehicleForm isPending={false} />
-                  </Card>
-                  <Card className="flex flex-col p-4 rounded-lg gap-1">
-                    <Textarea label="Anotações" {...methods.register("note")} placeholder="Ex: Avarias, acordos com o cliente..."/>
-                  </Card>
-                </div>
-              </TabsContent>
-            </Tabs>
-
-            {/* Botões */}
-            <div className="flex justify-between items-end gap-4 mt-4 pt-4" onMouseEnter={() => setPdfData(methods.getValues())}>
-              {/* <div> */}
-                {/* <ConfirmButton
-                  message="Deseja começar um novo orçamento do zero?"
-                  title="Resetar"
-                  variant={"destructive"}
-                  onConfirm={() => console.log("reset")}
-                >
-                  Resetar
-                </ConfirmButton> */}
-                {/* <ConfirmButton
-                  message="Deseja começar um novo orçamento para a mesma pessoa e veículo?"
-                  title="Duplicar"
-                  variant={"outline"}
-                  onConfirm={onDuplicateClick}
-                >
-                  Duplicar
-                </ConfirmButton> */}
-              {/* </div> */}
-              <div className="flex gap-2">
-                <Modal
-                  trigger={<Button disabled={serviceOrderItems.length <= 0} onClick={() => setPdfData(methods.getValues())} variant="outline"><File size={18}/>PDF</Button>}
-                  title="Orçamento"
-                  subtitle="Envie ou imprima para seu cliente"
-                  className="min-h-[calc(100vh-180px)]"
-                  async={true}
-                >
-                  <PDFViewer showToolbar={true} className="w-full min-h-[calc(100vh-180px)]">
-                    <ServiceOrderPDF data={pdfData} filename={pdfFileName}/>
-                  </PDFViewer>
-                </Modal>
-                <PDFDownloadLink
-                  fileName={pdfFileName}
-                  document={<ServiceOrderPDF data={pdfData}/>}>
-                  <Button variant={"outline"} disabled={serviceOrderItems.length <= 0} type="button"><Save size={18} />Download</Button>
-                </PDFDownloadLink>
-              </div>
-              <Button type="submit"><Save size={18} className="mr-2" />Salvar</Button>
-            </div>
-          </div>
-        </form>
-      </FormProvider>
-
-      {/* right Side */}
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center pb-4 gap-4">
+    <>
+    <FormProvider {...methods}>
+      <div className="flex-1 flex flex-col gap-4 h-screen">
+        <header className="flex items-center gap-4 py-4">
           <div className="flex flex-1">
-            <h1 className="text-2xl font-bold">{id ?  `Orçamento ${methods.getValues('id')}` : 'Novo orçamento'}</h1>
+            <h1 className="text-2xl font-bold">
+              {uuid ? `Orçamento ${methods.getValues("uuid")}` : "Novo orçamento"}
+            </h1>
           </div>
           <div className="flex gap-4 items-center">
             <Input type="date" {...methods.register("startAt")} />
@@ -209,16 +159,87 @@ function ServiceOrderPage() {
             onChange={(value) => methods.setValue("status", value)}
           />
         </header>
-
-        <ServiceOrderItems
-          data={serviceOrderItems}
-          onAddItem={handleOnAddItem}
-          onChangeItem={handleChangeItem}
-          onRemoveItem={handleOnRemoveItem}
-        />
+        <div className="overflow-auto scroll-smooth flex flex-col gap-4">
+        <section className="flex-1 gap-4 flex">
+          <ServiceOrderItems
+            data={serviceOrderItems}
+            onAddItem={handleOnAddItem}
+            onChangeItem={handleChangeItem}
+            onRemoveItem={handleOnRemoveItem}
+          />
+          <form onSubmit={methods.handleSubmit(handleOnSave)} className="flex flex-col h-full  gap-4">
+            <Card className="px-4 rounded-3xl">
+              <CustomerForm isPending={false} />
+            </Card>
+            <Card className="px-4 rounded-3xl">
+              <VehicleForm isPending={false} />
+            </Card>
+            <Card className="flex flex-1 flex-col p-4 rounded-3xl gap-1">
+              <Textarea
+                className="flex-1"
+                label="Anotações"
+                {...methods.register("note")}
+                placeholder="Ex: Avarias, acordos com o cliente..."
+              />
+            </Card>
+          </form>
+        </section>
+        <p className="text-md font-bold pl-4">Imagens do Veículo</p>
+        <Card className="p-4 rounded-3xl">
+          <FileSelect label="Imagens" />
+        </Card>
+        </div>
+        <footer
+          className="flex justify-end gap-4 py-4 sticky bottom-0"
+          onMouseEnter={() => setPdfData(methods.getValues())}
+        >
+          <Modal
+            trigger={
+              <Button
+                disabled={serviceOrderItems.length <= 0}
+                onClick={() => setPdfData(methods.getValues())}
+                variant="outline"
+              >
+                <File size={18} />
+                PDF
+              </Button>
+            }
+            title="Orçamento"
+            subtitle="Envie ou imprima para seu cliente"
+            className="min-h-[calc(100vh-180px)]"
+            async={true}
+          >
+            <PDFViewer
+              showToolbar={true}
+              className="w-full min-h-[calc(100vh-180px)]"
+            >
+              <ServiceOrderPDF data={pdfData} filename={pdfFileName} />
+            </PDFViewer>
+          </Modal>
+          <PDFDownloadLink
+            fileName={pdfFileName}
+            document={<ServiceOrderPDF data={pdfData} />}
+          >
+            <Button
+              variant={"outline"}
+              disabled={serviceOrderItems.length <= 0}
+              type="button"
+            >
+              <Save size={18} />
+              Download
+            </Button>
+          </PDFDownloadLink>
+          <Button type="button" loading={isPending} onClick={methods.handleSubmit(handleOnSave)}>
+            <Save size={18} className="mr-2" />
+            Salvar
+          </Button>
+        </footer>
       </div>
-    </div>
+    </FormProvider>
+  </>  
   );
 }
 
 export default ServiceOrderPage;
+
+

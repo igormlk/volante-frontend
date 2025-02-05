@@ -1,7 +1,7 @@
 import Card from "@/components/Card"
 import SearchPage from "@/components/SearchPage"
 import { getCustomersAPI } from "@/data/api/CustomersAPI"
-import { USE_QUERY_CONFIGS } from "@/data/constants/utils"
+import { DEBOUNCE_TIMEOUT, timestampToLocaleString, USE_QUERY_CONFIGS } from "@/data/constants/utils"
 import useDebounce from "@/hooks/useDebounce"
 import { isToday } from "@/lib/utils"
 import { useInfiniteQuery } from "@tanstack/react-query"
@@ -9,9 +9,9 @@ import { Home, Mail, Phone } from "lucide-react"
 
 
 export default function CustomersPage() {
-  const [searchValue, setSearchValue] = useDebounce({timeout: 800})
+  const [searchValue, setSearchValue] = useDebounce({timeout: DEBOUNCE_TIMEOUT})
 
-  const {data: customers, fetchNextPage, isFetchingNextPage, hasNextPage} = useInfiniteQuery({
+  const {data: customers, fetchNextPage, isFetchingNextPage, hasNextPage, dataUpdatedAt} = useInfiniteQuery({
     queryKey: ['get_customers', {searchValue}],
     queryFn: ({pageParam = 1}) => getCustomersAPI(searchValue, pageParam),
     ...USE_QUERY_CONFIGS,
@@ -21,11 +21,13 @@ export default function CustomersPage() {
     }
   })
   const customersData = customers?.pages.flatMap((page) => page.data) || [];
+  const lastUpdatedAt = 'Última atualização: ' + timestampToLocaleString(dataUpdatedAt)
 
   return (
     <SearchPage>
       <SearchPage.Title>Clientes</SearchPage.Title>
-      <SearchPage.SearchBar placeholder="Pesquise seus clientes aqui..." onChange={(e) => {setSearchValue(e.target.value)}}/>
+      <p className="text-sm text-muted-foreground">{lastUpdatedAt}</p>
+      <SearchPage.SearchBar placeholder="Pesquise seus clientes aqui..."  onChange={(e) => {setSearchValue(e.target.value)}}/>
       <Card.Container>
         {customersData.map((customer: any) => (
           <Card key={customer.id}>

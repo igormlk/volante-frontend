@@ -60,11 +60,14 @@ export const SO_STATUS_LIST: {value: STATUS_SERVICE_ORDER, label: string, color:
 
 export const PAGE_LIMIT = 15
 
+export const DEBOUNCE_TIMEOUT = 800
+
 export const USE_QUERY_CONFIGS = {
     retry: 0,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
-    initialPageParam: 1
+    initialPageParam: 1,
+    staleTime: 900000 // 15 minutos
 }
 
 export const CAR_SERVICES = [
@@ -82,3 +85,5 @@ export const CAR_SERVICES = [
     { "value": "GLASSWORK", "label": "Vidraçaria", "color": "bg-blue-300" },
     { "value": "OTHER", "label": "Outros", "color": "bg-pink-800" }
 ]
+
+export const timestampToLocaleString = (timestamp: number, locale = 'pt-BR') => new Date(timestamp).toLocaleString(locale)

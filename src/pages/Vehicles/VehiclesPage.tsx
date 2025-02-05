@@ -2,15 +2,15 @@ import Card from "@/components/Card"
 import SearchPage from "@/components/SearchPage"
 import CarPlate from "@/components/ui/plate"
 import { getVehiclesAPI } from "@/data/api/VehiclesAPI"
-import { USE_QUERY_CONFIGS } from "@/data/constants/utils"
+import { DEBOUNCE_TIMEOUT, timestampToLocaleString, USE_QUERY_CONFIGS } from "@/data/constants/utils"
 import useDebounce from "@/hooks/useDebounce"
 import { isToday } from "@/lib/utils"
 import { useInfiniteQuery } from "@tanstack/react-query"
 
 export default function VehiclesPage() {
-  const [searchValue, setSearchValue] = useDebounce({timeout: 800})
+  const [searchValue, setSearchValue] = useDebounce({timeout: DEBOUNCE_TIMEOUT})
 
-  const {data: vehicles, isFetchingNextPage, hasNextPage, fetchNextPage} = useInfiniteQuery({
+  const {data: vehicles, isFetchingNextPage, hasNextPage, fetchNextPage, dataUpdatedAt} = useInfiniteQuery({
     queryKey: ['get_all_vehicles', {searchValue}],
     queryFn: ({pageParam = 1}) => getVehiclesAPI(searchValue, pageParam),
     ...USE_QUERY_CONFIGS,
@@ -22,10 +22,12 @@ export default function VehiclesPage() {
   })
 
   const vehiclesData = vehicles?.pages.flatMap(page => page.data)  || []
+  const lastUpdatedAt = 'Última atualização: ' + timestampToLocaleString(dataUpdatedAt)
 
   return (
     <SearchPage>
       <SearchPage.Title>Veículos</SearchPage.Title>
+      <p className="text-sm text-muted-foreground">{lastUpdatedAt}</p>
       <SearchPage.SearchBar placeholder="Pesquise os veículos aqui..." onChange={(e) => {setSearchValue(e.target.value)}}/>
       <Card.Container>
         {vehiclesData?.map((vehicle: any) => (

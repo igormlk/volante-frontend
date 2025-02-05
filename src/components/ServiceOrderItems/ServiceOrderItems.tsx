@@ -12,7 +12,6 @@ import MoneyInput from "../ui/money-input";
 import { BADGE_COLORS } from "@/data/constants/colors";
 import { ReactNode } from "react";
 import { Trash2Icon } from "lucide-react";
-import { nanoid } from 'nanoid/non-secure'
 import ConfirmButton from "../ConfirmButton/ConfirmButton";
 import { CAR_SERVICES } from "@/data/constants/utils";
 interface ServiceOrderItemProps {
@@ -27,12 +26,11 @@ const ServiceOrderItems = ({ data, onAddItem, onChangeItem, onRemoveItem }: Serv
 
     const onSubmit = async (item: ServiceOrderItem) => {
         let newItem = {...item}
-        newItem.id = nanoid()
         await onAddItem(newItem);
     };
 
     return (
-        <Card className="rounded-lg p-4 flex-1 flex flex-col">
+        <Card className="rounded-3xl p-4 flex-1 flex flex-col">
             <ServiceOrderItems.Form onSubmit={onSubmit} />
             <ul className="flex text-sm font-bold mt-6 text-right">
                 <li className="flex-1 text-left">Descrição</li>
@@ -42,7 +40,7 @@ const ServiceOrderItems = ({ data, onAddItem, onChangeItem, onRemoveItem }: Serv
                 <li className="w-[170px] mr-[68px]">Total</li>
             </ul>
             <ServiceOrderItems.List data={data} renderItem={item => (
-                <ServiceOrderItems.ListItem key={item.id} item={item} onChange={onChangeItem} onDelete={onRemoveItem}/>
+                <ServiceOrderItems.ListItem key={item.uuid} item={item} onChange={onChangeItem} onDelete={onRemoveItem}/>
             )} />
             <ServiceOrderItems.Footer
                 subtotal={subtotal}
@@ -55,16 +53,15 @@ const ServiceOrderItems = ({ data, onAddItem, onChangeItem, onRemoveItem }: Serv
     );
 };
 
-const ITEM_ID_LENGTH = 10
 const defaultServiceOrder: ServiceOrderItem = {
-    id: nanoid(ITEM_ID_LENGTH), description: "", value: 0, discount: 0, quantity: 1, type: "BODYWORK", insurance_coverage: 0, total: 0
+    uuid: '', description: "", value: 0, discount: 0, quantity: 1, type: "BODYWORK", insurance_coverage: 0, total: 0
  };
 
 ServiceOrderItems.Form = ({ onSubmit }: { onSubmit: (data: ServiceOrderItem) => void }) => {
     const form = useForm<ServiceOrderItem>({ defaultValues: defaultServiceOrder });
     const handleOnSubmit = (data: ServiceOrderItem) => {
         onSubmit(data);
-        form.setValue('id', nanoid(ITEM_ID_LENGTH))
+        form.setValue('uuid', '')
         form.setValue('description', '')
         form.setValue('quantity', 0)
         form.setValue('discount', 0)
