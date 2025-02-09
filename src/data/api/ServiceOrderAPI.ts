@@ -4,7 +4,7 @@ import { AxiosResponse } from "axios";
 
 const createServiceOrderAPI = () => ({
     get: (searchValue = '', page = 1, filter: 'vehicle' | 'customer' = 'vehicle'): Promise<AxiosResponse> => {
-        return api.get('service_orders/search', {params: { [filter]: searchValue, page, startDate: '2024-11-06T01:58:58.926Z', endDate: '2024-12-31T01:58:58.926Z' }})
+        return api.get('service_orders/search', {params: { [filter]: searchValue, page, startDate: null, endDate: null }})
     },
     put: (serviceOrder: Partial<ServiceOrder>):Promise<AxiosResponse<ServiceOrder>> => {
         const filteredSO: ServiceOrder = Object.keys(serviceOrder).reduce((acc, key) => {

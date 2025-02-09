@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const currencyFormat = (value: number, style?: string | 'currency', currency: string = "BRL") => new Intl.NumberFormat('pt-BR', {
+export const currencyFormat = (value: number, style?: "decimal" | "currency" | "percent" | "unit", currency: string = "BRL") => new Intl.NumberFormat('pt-BR', {
   style,
   currency,
   minimumFractionDigits: 2,

@@ -1,4 +1,4 @@
-import { Car, Check, File, Save, User, X } from "lucide-react";
+import { Check, File, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CustomerForm } from "@/components/FormSheet/Customer";
@@ -11,7 +11,6 @@ import { SO_STATUS_LIST } from "@/data/constants/utils";
 import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import { ServiceOrderPDF } from "@/components/PDF/ServiceOrderPDF";
 import { Modal } from "@/components/Modal/Modal";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FormProvider, useForm } from "react-hook-form";
@@ -38,9 +37,9 @@ function ServiceOrderPage() {
   const { uuid } = useParams();
   const location = useLocation();
   const [pdfData, setPdfData] = useState<ServiceOrder>();
-  const [activeTab, setActiveTab] = useState<"customer" | "damage" | string>(
-    "customer"
-  );
+  // const [activeTab, setActiveTab] = useState<"customer" | "damage" | string>(
+  //   "customer"
+  // );
   const pdfFileName = `${pdfData?.vehicle?.brand}_${pdfData?.vehicle?.model}_${pdfData?.customer?.name}`;
 
   const methods = useForm<ServiceOrder>({ defaultValues: DEFAULT_FORM_VALUES });
@@ -236,7 +235,7 @@ function ServiceOrderPage() {
         </footer>
       </div>
     </FormProvider>
-  </>  
+  </>
   );
 }
 
